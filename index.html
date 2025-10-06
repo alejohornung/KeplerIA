@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>KeplerIA - Exoplanet Analysis</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input[type="text"] { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+        button { margin-top: 20px; padding: 10px 15px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        #resultados { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px; }
+        .match { border: 1px solid #eee; padding: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="parallax"></div>
+    <div class="top-bar-block" style="width:100%;position:fixed;top:0;left:0;z-index:20;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:90px;box-sizing:border-box;">
+        <nav class="menu" style="display:flex;gap:32px;">
+            <ul style="display:flex;gap:32px;list-style:none;margin:0;padding:0;">
+                <li><a href="index.html" style="color:#fff;font-weight:bold;text-decoration:none;font-size:1.1em;">Home</a></li>
+                <li><a href="equipo.html" style="color:#fff;font-weight:bold;text-decoration:none;font-size:1.1em;">About us</a></li>
+                <li><a href="recursos.html" style="color:#fff;font-weight:bold;text-decoration:none;font-size:1.1em;">Resources</a></li>
+            </ul>
+        </nav>
+        <img src="img/kepler-ia.png" alt="KeplerIA" style="height:70px;">
+    </div>
+    <div class="container">
+        <h1>Vector Analysis of Exoplanets</h1>
+    <p>Enter the investigated data to compare it with the vector database.</p>
+
+    <form id="analisisForm">
+        <label for="nombre">Exoplanet Name:</label>
+        <input type="text" id="nombre" value="Test Exoplanet" required>
+
+        <label for="luminosidad">Luminosity:</label>
+        <input type="text" id="luminosidad" value="Low" required>
+
+        <label for="distancia">Distance:</label>
+        <input type="text" id="distancia" value="2000 light years" required>
+
+        <label for="senal_luz">Light Signal (Description):</label>
+        <input type="text" id="senal_luz" value="Periodic, very weak" required>
+        
+        <button type="submit">Analyze and Compare</button>
+    </form>
+
+    <div id="resultados">
+        <h2>Comparison Results</h2>
+        <p id="mensaje" style="display:none;"></p>
+    </div>
+
+    <script>
+
+    const N8N_WEBHOOK_URL = 'https://kepleria.app.n8n.cloud/workflow/ZGTkAaPbi5tt9RUz'; 
+
+        document.getElementById('analisisForm').addEventListener('submit', function(e) {
+            e.preventDefault(); 
+
+            const btn = document.querySelector('button[type="submit"]');
+            const mensaje = document.getElementById('mensaje');
+            const resultadosDiv = document.getElementById('resultados');
+
+            
+            const datosConsulta = {
+                nombre: document.getElementById('nombre').value,
+                luminosidad: document.getElementById('luminosidad').value,
+                distancia: document.getElementById('distancia').value,
+                señal_luz: document.getElementById('senal_luz').value,
+            };
+
+            mensaje.style.display = 'block';
+            mensaje.textContent = 'Sending data to n8n AI... This may take a few seconds.';
+            btn.disabled = true;
+
+            
+            fetch(N8N_WEBHOOK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(datosConsulta)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}. Revisa la URL del Webhook.`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                
+                btn.disabled = false;
+                mensaje.innerHTML = `<strong>Vectorized Query:</strong> ${data.consulta_vectorizada}`;
+                
+                
+                const listaResultados = document.createElement('div');
+                
+                data.resultados_top_5.forEach((match, index) => {
+                    const matchDiv = document.createElement('div');
+                    matchDiv.className = 'match';
+                    matchDiv.innerHTML = `
+                        <strong>#${index + 1}:</strong> ${match.id} <br>
+                        <strong>Similarity:</strong> ${match.similitud} <br>
+                        <strong>Exoplanet Info:</strong> ${match.info || 'N/A'}
+                    `;
+                    listaResultados.appendChild(matchDiv);
+                });
+
+                
+                resultadosDiv.appendChild(listaResultados);
+
+            })
+            .catch(error => {
+                btn.disabled = false;
+                console.error('Error al conectar con n8n:', error);
+                mensaje.innerHTML = `<strong>ERROR:</strong> The request could not be completed. See console for details.`;
+            });
+        });
+
+   </script>
+            <h2>Information</h2>
+            <p>Exoplanets, also known as extrasolar planets, are planets located outside our Solar System, mostly orbiting other stars. The study of exoplanets is a relatively new field in astronomy and has gained momentum since the 1990s, when the first ones were confirmed. The existence of exoplanets raises intriguing questions about the possibility of extraterrestrial life, especially those found in the "habitable zone" of their star, where conditions could allow for liquid water on their surface.</p>
+            <h2>Exoplanet Characteristics</h2>
+            <ul>
+                <li>Variety of types: Ranging from gas giants larger than Jupiter to "super-Earths" and "mini-Neptunes".</li>
+                <li>Diverse orbits: Some exoplanets orbit their stars in just a few days, others take millennia.</li>
+                <li>"Rogue" planets: Do not orbit any star and wander freely through the galaxy.</li>
+                <li>Extreme temperatures: Atmospheres can be very hot or permanently frozen.</li>
+                <li>Peculiar atmospheres: Spectroscopy allows scientists to analyze their chemical composition.</li>
+            </ul>
+            <h2>Detection Methods</h2>
+            <ul>
+                <li>Transit method</li>
+                <li>Radial velocity method</li>
+                <li>Direct observation</li>
+            </ul>
+            <h2>Exploration and Future</h2>
+            <p>The study of exoplanets helps scientists understand the formation of planetary systems and our own planet. Research continues to advance, with thousands of confirmed exoplanets and many more to be discovered.</p>
+            
+            <ul>
